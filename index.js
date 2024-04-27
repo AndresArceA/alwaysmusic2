@@ -45,62 +45,6 @@ console.log("**********");
 
 //------------ pregunta 1-----
 
-// funcion para agregar Alumnos
-// const nvoAlumno = async () => {
-//   try {
-//     const result = await pool.query({
-//       text: `INSERT INTO alumnos values ($1,$2,$3,$4) RETURNING *`,
-//       values: [rut, nombre, curso, nivel],
-//     });
-//     console.log(`Alumno ${nombre} ${rut} agregado con éxito`);
-//     console.log("Alumno Agregado: ", result.rows[0]);
-    
-//   } catch (error) {
-//     let status;
-//   console.log("Error producido: ",error);
-//   console.log("Codigo de error PG producido: ",error.code);
-//   switch (error.code) {
-//       case '28P01':
-//           status = 400;
-//           error.message = "autentificacion password falló o no existe usuario: "+pool.options.user;
-//           break;
-//       case '42P01':
-//           status = 400;
-//           error.message = "No existe la tabla ["+tabla+"] consultada";
-//           break;    
-//       case '3D000':
-//           status = 400;
-//           error.message = "Base de Datos ["+pool.options.database+"] no existe";
-//           break;
-//       case '28000':
-//           status = 400;
-//           error.message = "Usuario ["+pool.options.user+"] no existe";
-//           break;
-//       case '42601':
-//           status = 400;
-//           error.message = "Error de Sintaxis en la instrucción";
-//           break;
-//       case 'ENOTFOUND':
-//           status = 500;
-//           error.message = "Error en valor usado como localhost: "+pool.options.host;
-//           break;
-//       case 'ECONNREFUSED':
-//           status = 500;
-//           error.message = "Error en el puerto de conexion a BD, usando: "+pool.options.port;
-//           break;
-//       case '22P02':
-//           status = 500;
-//           error.message = "Error en el ingreso de datos del campo Rut, debe ser un valor Integer, no usar guiones";
-//           break;    
-//       default:
-//           status=500;
-//           error.message = "Error interno del servidor";
-//           break;
-//   }
-  
-// }
-// }
-
 const nvoAlumno = async () => {
   try {
     const result = await pool.query({
@@ -129,9 +73,8 @@ const estudiantes = async () => {
      });
      console.log(`Alumnos registrados en la academia `, res.rows);
   } catch (error) {
-    console.log("Error :", err);
-    const EE = errores(error.code,error.status,error.message);
-    console.log("Status ",EE.status," |Error Cod. ",EE.code,"|",EE.message);
+      const EE = errores(error.code,error.status,error.message);
+      console.log("Status ",EE.status," |Error Cod. ",EE.code,"|",EE.message);
 
   }
   }
@@ -142,31 +85,51 @@ const estudiantes = async () => {
 // funcion para consultar alumno por rut
 
 const consultaRut = async ({ rut }) => {
-  const res = await pool.query(
-    `SELECT * FROM alumnos WHERE rut='${rut}'`
-  );
-  console.log("Alumno consultado: ", res.rows[0]);
-}
-
-
-
-
-
-  
-//   res.status(status).json({ 
-//                               error: error.message 
-//                           });
-
-// }
-// });
+  try {
+    
+    const existeRut = await pool.query({
+      // Consulto si el Rut existe en la tabla
+      text: `SELECT COUNT(*) FROM ${tabla} WHERE rut = $1`,
+      values: [rut]
+    });
+    // Verifico si el Rut es un valor numérico válido antes de realizar la consulta, 
+    //para valor string opera el manejo de errores capturando el codigo de error.
+    if (isNaN(rut)) {
+      console.log("El Rut debe ser un valor numérico válido.");
+    }else if
+        // Verifico si el Rut existe en la tabla
+    (existeRut.rows[0].count === '0') {
+      console.log(`El Rut ${rut} no existe en la tabla. Revise el Rut o agreguelo con "Agregar"`);
+    } else {
+      const res = await pool.query({
+        // Si el Rut existe, realizar la consulta
+        text: `SELECT * FROM ${tabla} WHERE rut = $1`,
+        values: [rut]
+      });
+      console.log("Alumno consultado: ", res.rows[0]);
+    }
+  } catch (error) {
+    // Manejar el error
+    const EE = errores(error.code, error.status, error.message);
+    console.log(
+      "Status ",
+      EE.status,
+      " | Error Cod. ",
+      EE.code,
+      " | ",
+      EE.message
+    );
+  }
+};
 
 
 //---------------preg 4--------------
-// Función para actualizar un alumno por su rut
-const actualizarAlumno = async ({ nombre, rut, curso, nivel }) => {
-    const res = await pool.query(
-      `UPDATE alumnos SET nombre=$1, curso=$2, nivel=$3 WHERE rut=$4 RETURNING *`,
-      [nombre, rut, curso, nivel]
+// Función para actualizar un alumno por su Rut
+const actualizarAlumno = async ({ rut, nombre, curso, nivel }) => {
+  try {
+    const res = await pool.query({
+      text: `UPDATE ${tabla} SET nombre=$2, curso=$3, nivel=$4 WHERE rut=$1 RETURNING *`,
+      [rut, nombre , curso, nivel]
     );
     if (res.rowCount > 0) {
       console.log(`Alumno con rut ${rut} actualizado con éxito`);
