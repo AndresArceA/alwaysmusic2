@@ -2,7 +2,7 @@ function errores(code, status, message) {
 switch (code) {
     case '22P02':
         status = 400;
-        message = "El Rut, ingresado no tiene formato valido, ingrese el Rut, sin puntos ni Guiones; favor intente de nuevo.";
+        message = "El Rut, ingresado no tiene formato valido, ingrese el Rut, sin puntos, guiones ni digito verificador; favor intente de nuevo.";
         break;
     case '23505':
         status= 400;

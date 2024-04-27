@@ -44,6 +44,7 @@ console.log("Nivel: " + nivel);
 console.log("**********");
 
 //------------ pregunta 1-----
+// funcion para consultar agregar Alumnos 
 
 const nvoAlumno = async () => {
   try {
@@ -129,30 +130,61 @@ const actualizarAlumno = async ({ rut, nombre, curso, nivel }) => {
   try {
     const res = await pool.query({
       text: `UPDATE ${tabla} SET nombre=$2, curso=$3, nivel=$4 WHERE rut=$1 RETURNING *`,
-      [rut, nombre , curso, nivel]
-    );
+      values:[rut, nombre , curso, nivel]
+    })
+
     if (res.rowCount > 0) {
       console.log(`Alumno con rut ${rut} actualizado con éxito`);
       console.log("Alumno Actualizado: ", res.rows[0]);
     } else {
-      console.log(`No se encontró ningún alumno con el rut ${rut}`);
+      console.log(`No se encontró ningún alumno con el rut ${rut}, revise los datos y reintente`);
     }
+  } catch (error){
+    console.log("Error al actualizar el alumno");
+    const EE = errores(error.code,error.status,error.message);
+    console.log("Status ",EE.status," |Error Cod. ",EE.code,"|",EE.message);
   }
+}
 
 //---------------preg 5--------------
 // Función para eliminar un alumno por su rut
-const eliminarAlumno = async ({ rut }) => {
-    const res = await pool.query(
-      `DELETE FROM alumnos WHERE rut=$1 RETURNING *`,
-      [rut]
-    );
-    if (res.rowCount > 0) {
-      console.log(`Alumno con rut ${rut} eliminado con éxito`);
+  const eliminarAlumno = async ({ rut }) => {
+    try {      
+      const existeRut = await pool.query({
+        // Consulto si el Rut existe en la tabla
+        text: `SELECT COUNT(*) FROM ${tabla} WHERE rut = $1`,
+        values: [rut]
+      });
+      // Verifico si el Rut es un valor numérico válido antes de realizar la consulta, 
+      //para valor string opera el manejo de errores capturando el codigo de error.
+      if (isNaN(rut)) {
+        console.log("El Rut debe ser un valor numérico válido.");
+      }else if
+          // Verifico si el Rut existe en la tabla
+      (existeRut.rows[0].count === '0') {
+        console.log(`El Rut ${rut} no existe en la base de datos. Revise el Rut e intentelo nuevamente`);
+      } else {
+        // Si el Rut existe, realizar la operación
+        const res = await pool.query({
+          text: `DELETE FROM ${tabla} WHERE rut=$1 RETURNING *`,
+          values:[rut]
+        });
+        console.log(`Alumno con rut ${rut} eliminado con éxito`);
       console.log("Alumno Eliminado: ", res.rows[0]);
-    } else {
-      console.log(`No se encontró el rut, revisa bien el rut ingresado ${rut}`);
+      }
+    } catch (error) {
+      // Manejar el error
+      const EE = errores(error.code, error.status, error.message);
+      console.log(
+        "Status ",
+        EE.status,
+        " | Error Cod. ",
+        EE.code,
+        " | ",
+        EE.message
+      );
     }
-  }  
+  };
 
 // Función IIFE que recibe los comandos de la línea de comandos y llama a las funciones asincrónicas internas
 (async () => {
