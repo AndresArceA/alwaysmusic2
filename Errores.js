@@ -1,5 +1,9 @@
 function errores(code, status, message) {
 switch (code) {
+    case '28000':
+        status = 400;
+        message = "Usuario no existe, revise sus datos de acceso.";
+        break;
     case '23502':
         status = 400;
         message = "Debe ingresar todos los campos para Agregar o Editar usuarios, Rut, Nombre, Curso y Nivel.";
@@ -17,7 +21,7 @@ switch (code) {
         break;
     case '23505':
         status = 400;
-        message = "Ya existe la ID a ingresar";
+        message = "Ya existe el ID a ingresar";
         break;
     case '28P01':
         status = 400;
@@ -29,11 +33,11 @@ switch (code) {
         break;    
     case '3D000':
         status = 400;
-        message = "Base de Datos a conectar no existe";
+        message = "No existe la BD solicitada, revise los datos de conexión.";
         break;
     case 'ENOTFOUND':
         status = 500;
-        message = "Error en valor usado como localhost";
+        message = "El nombre del Host está incorrecto, corrija los datos de conexión";
         break;
     case 'ECONNREFUSED':
         status = 500;
