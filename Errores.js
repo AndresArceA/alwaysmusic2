@@ -1,5 +1,9 @@
 function errores(code, status, message) {
 switch (code) {
+    case '23502':
+        status = 400;
+        message = "Debe ingresar todos los campos para Agregar o Editar usuarios, Rut, Nombre, Curso y Nivel.";
+        break;
     case '22P02':
         status = 400;
         message = "El Rut, ingresado no tiene formato valido, ingrese el Rut, sin puntos, guiones ni digito verificador; favor intente de nuevo.";

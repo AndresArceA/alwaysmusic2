@@ -1,8 +1,11 @@
+
+//requiero modulo pg
 const { Pool } = require("pg");
 
-const errores = require('./handleErrors.js');
+// importo archivo para manejo de errores
+const errores = require('./Errores.js');
 
-// variables globales
+// defino variables globales
 
 const tabla = "alumnos";
 const host = "localhost"
@@ -11,7 +14,7 @@ const db = "alwaysmusic";
 const PORT = 5432;
 const pwd = "";
 
-
+// Configuración de la conexión a PostgreSQL
 // objeto de conexión
 const config = {
   user: user,
@@ -21,9 +24,9 @@ const config = {
   port: PORT
 };
 
+// creo la instancia de Pool
 const pool = new Pool(config);
 
-//
 // manejo del process.argv
 const argumentos = process.argv.slice(2);
 // posicion 0 funcion a usar
@@ -35,31 +38,48 @@ const nombre = argumentos[2];
 const curso = argumentos[3];
 const nivel = argumentos[4];
 
-console.log("**********");
-console.log("Funcion: " + funcion);
-console.log("Rut: " + rut);
-console.log("Nombre: " + nombre);
-console.log("Curso: " + curso);
-console.log("Nivel: " + nivel);
-console.log("**********");
+
+//informacion de referencia para los datos ingesados
+console.log("____________________");
+console.log("|Funcion: " + funcion, "|");
+console.log("|Rut: " + rut,         "|");
+console.log("|Nombre: " + nombre,   "|");
+console.log("|Curso: " + curso,     "|");
+console.log("|Nivel: " + nivel,     "|");
+console.log("_____________________");
+
+// instrucciones de uso;
+// ingresar Alumnos: node index agregar 13648382 Abraham trompeta quinto
+// consultar Estudiantes registrados:  node index alumnos
+// consultar por rut: node index rut 13648382
+// actualizar Informacion de Alumno: node index actualizar 13648382 Juanito piano sexto
+// eliminar datos: node index eliminar 13648382
+
 
 //------------ pregunta 1-----
 // funcion para consultar agregar Alumnos 
 
-const nvoAlumno = async () => {
+const nvoAlumno = async ({rut, nombre, curso, nivel}) => {
   try {
-    const result = await pool.query({
-      text: `INSERT INTO ${tabla} VALUES ($1, $2, $3, $4) RETURNING *`,
-      values: [rut, nombre, curso, nivel],
-    });
-    console.log(`Alumno ${nombre} ${rut} agregado con éxito`);
-    console.log("Alumno Agregado: ", result.rows[0]);
-  } catch (error) {
-    const EE = errores(error.code,error.status,error.message);
-    console.log("Status ",EE.status," |Error Cod. ",EE.code,"|",EE.message);
-      
-    };
-  };
+      const result = await pool.query({
+        text: `INSERT INTO ${tabla} VALUES ($1, $2, $3, $4) RETURNING *`,
+        values: [rut, nombre, curso, nivel],
+      });
+      console.log(`Alumno ${nombre} ${rut} agregado con éxito`);
+      console.log("Alumno Agregado: ", result.rows[0]);
+    }catch (error) {
+    console.log("Error al agregar al alumno");
+    const EE = errores(error.code, error.status, error.message);
+    console.log(
+      "Status ",
+      EE.status,
+      " |Error Cod. ",
+      EE.code,
+      "|",
+      EE.message
+    );
+  }
+};
 
 
 //---------------preg 2--------------
@@ -211,15 +231,10 @@ const actualizarAlumno = async ({ rut, nombre, curso, nivel }) => {
        
         break;
     }  
-    pool.end(); // Asegurarse de que se cierre la conexión con la base de datos, incluso en caso de error
+    pool.end(); //se cierra la conexión a la base de datos
+  
 }
 )();
 
 
 
-// instrucciones de uso;
-// consultar todos:  node index todos
-// consultar por rut: node index rut - 5555864
-// ingresar datos: node index agregar Abraham 5555864 trompeta quinto
-// actualizar datos: node index actualizar 5555864 piano sexto
-// eliminar datos: node index eliminar - 5555864
